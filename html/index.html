@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Testing Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c10;--border:rgba(255,255,255,.05);
+  --text:#e8edf2;--muted:rgba(232,237,242,.35);
+  --accent:#3d8eff;
+  --green:#00e5a0;--red:#ff3c3c;--orange:#ff8c00;--purple:#a855f7;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;overflow:hidden}
+
+/* grid bg */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 20%,transparent 100%);
+  pointer-events:none;
+}
+body::after{
+  content:'';position:fixed;
+  width:700px;height:700px;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(61,142,255,.06) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* top bar */
+.bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 2rem;border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.bar-left{display:flex;align-items:center;gap:.8rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,229,160,.4)}50%{opacity:.7;box-shadow:0 0 0 5px rgba(0,229,160,0)}}
+.bar-label{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--green);letter-spacing:.14em}
+.bar-right{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em}
+
+/* main */
+main{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:2rem;gap:2.5rem;
+  position:relative;overflow:hidden;
+}
+
+/* heading */
+.heading{text-align:center;animation:fadeup .5s ease both}
+@keyframes fadeup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.tag{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:'DM Mono',monospace;font-size:.68rem;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);padding:.3rem .8rem;
+  border:1px solid rgba(61,142,255,.25);border-radius:2px;
+  margin-bottom:1rem;
+}
+.tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2.5rem,6vw,4.5rem);
+  line-height:.95;letter-spacing:.04em;
+  color:var(--text);
+}
+h1 em{color:var(--accent);font-style:normal}
+
+/* grid */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:4px;
+  overflow:hidden;
+  width:100%;max-width:700px;
+  animation:fadeup .5s .1s ease both;
+}
+
+.card{
+  display:flex;flex-direction:column;gap:.6rem;
+  padding:1.8rem 1.6rem;
+  background:rgba(13,19,24,.8);
+  text-decoration:none;color:var(--text);
+  position:relative;overflow:hidden;
+  transition:background .2s;
+  backdrop-filter:blur(8px);
+}
+.card::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:2px;
+  background:var(--card-color,var(--accent));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .25s ease;
+}
+.card:hover{background:rgba(255,255,255,.03)}
+.card:hover::before{transform:scaleX(1)}
+.card:hover .arrow{opacity:1;transform:translateX(0)}
+
+.card-icon{font-size:1.3rem;line-height:1}
+.card-title{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:.92rem;letter-spacing:.03em;
+}
+.card-sub{
+  font-family:'DM Mono',monospace;font-size:.66rem;
+  color:var(--muted);letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.arrow{
+  position:absolute;bottom:1.4rem;right:1.4rem;
+  font-family:'DM Mono',monospace;font-size:.8rem;
+  color:var(--card-color,var(--accent));
+  opacity:0;transform:translateX(-4px);
+  transition:opacity .2s,transform .2s;
+}
+
+/* card accent colors */
+.c-blue{--card-color:var(--accent)}
+.c-orange{--card-color:var(--orange)}
+.c-green{--card-color:var(--green)}
+.c-red{--card-color:var(--red)}
+.c-purple{--card-color:var(--purple)}
+.c-teal{--card-color:#00d4d4}
+
+/* bottom bar */
+.bottombar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 2rem;border-top:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.66rem;color:var(--muted);letter-spacing:.1em;
+  flex-shrink:0;
+}
+.status-row{display:flex;align-items:center;gap:1.5rem}
+.status-item{display:flex;align-items:center;gap:.4rem}
+.sdot{width:6px;height:6px;border-radius:50%}
+.s-ok{background:var(--green)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOP BAR -->
+  <div class="bar">
+    <div class="bar-left">
+      <div class="dot"></div>
+      <span class="bar-label">Server Online</span>
+    </div>
+    <div class="bar-right" id="ts"></div>
+  </div>
+
+  <!-- MAIN -->
+  <main>
+    <div class="heading">
+      <div class="tag">Dev Tools</div>
+      <h1>Testing <em>Dashboard</em></h1>
+    </div>
+
+    <div class="grid">
+
+      <a class="card c-orange" href="up.html">
+        <div class="card-icon">📤</div>
+        <div class="card-title">Upload File</div>
+        <div class="card-sub">Multipart / form-data</div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="card c-blue" href="post.html">
+        <div class="card-icon">📨</div>
+        <div class="card-title">Post</div>
+        <div class="card-sub">HTTP POST request</div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="card c-green" href="get.html">
+        <div class="card-icon">📥</div>
+        <div class="card-title">Get</div>
+        <div class="card-sub">HTTP GET request</div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="card c-red" href="del.html">
+        <div class="card-icon">🗑</div>
+        <div class="card-title">Delete</div>
+        <div class="card-sub">HTTP DELETE request</div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="card c-purple" href="login.html">
+        <div class="card-icon">🍪</div>
+        <div class="card-title">Cookie Tester</div>
+        <div class="card-sub">Session / auth cookies</div>
+        <div class="arrow">→</div>
+      </a>
+
+      <a class="card c-teal" href="cgi.html">
+        <div class="card-icon">⚙️</div>
+        <div class="card-title">CGI Tester</div>
+        <div class="card-sub">Common gateway interface</div>
+        <div class="arrow">→</div>
+      </a>
+
+    </div>
+  </main>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottombar">
+    <div class="status-row">
+      <div class="status-item"><div class="sdot s-ok"></div>6 endpoints ready</div>
+    </div>
+    <span id="path"></span>
+  </div>
+
+</div>
+<script>
+  const pad = n => String(n).padStart(2,'0');
+  const tick = () => {
+    const d = new Date();
+    document.getElementById('ts').textContent =
+      `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}  ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+  tick(); setInterval(tick,1000);
+  document.getElementById('path').textContent = window.location.hostname || 'localhost';
+</script>
+</body>
+</html>

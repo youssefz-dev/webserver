@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Get — Testing Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c10;--border:rgba(255,255,255,.05);
+  --text:#e8edf2;--muted:rgba(232,237,242,.35);
+  --accent:#00e5a0;--surface:rgba(13,19,24,.9);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;overflow:hidden}
+
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 20%,transparent 100%);
+  pointer-events:none;
+}
+body::after{
+  content:'';position:fixed;
+  width:600px;height:600px;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(0,229,160,.05) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 2rem;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.bar-left{display:flex;align-items:center;gap:.8rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,229,160,.4)}50%{opacity:.7;box-shadow:0 0 0 5px rgba(0,229,160,0)}}
+.bar-label{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);letter-spacing:.14em}
+.bar-right{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em}
+.back{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em;text-decoration:none;transition:color .2s}
+.back:hover{color:var(--text)}
+
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;position:relative}
+
+.card{
+  width:100%;max-width:460px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top:2px solid var(--accent);
+  border-radius:4px;
+  backdrop-filter:blur(16px);
+  animation:fadeup .5s ease both;
+}
+@keyframes fadeup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.card-header{
+  padding:1.6rem 2rem 1.2rem;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;
+}
+.tag{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-family:'DM Mono',monospace;font-size:.64rem;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.5rem;
+}
+.tag::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.06em;color:var(--text)}
+.method-badge{
+  font-family:'DM Mono',monospace;font-size:.66rem;letter-spacing:.14em;
+  color:var(--accent);border:1px solid rgba(0,229,160,.25);
+  padding:.25rem .6rem;border-radius:2px;margin-top:.2rem;
+}
+
+.card-body{padding:1.8rem 2rem}
+
+.field{margin-bottom:1rem}
+.field-label{
+  display:block;font-family:'DM Mono',monospace;font-size:.64rem;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;
+}
+
+/* input with prefix */
+.input-wrap{
+  display:flex;align-items:stretch;
+  border:1px solid var(--border);border-radius:2px;
+  overflow:hidden;transition:border-color .2s;
+}
+.input-wrap:focus-within{border-color:rgba(0,229,160,.35)}
+.input-prefix{
+  display:flex;align-items:center;padding:0 .9rem;
+  background:rgba(0,229,160,.04);border-right:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.76rem;color:rgba(0,229,160,.5);
+  letter-spacing:.04em;white-space:nowrap;flex-shrink:0;
+}
+.input-wrap input{
+  flex:1;padding:.75rem 1rem;
+  background:rgba(255,255,255,.02);border:none;
+  color:var(--text);font-family:'DM Mono',monospace;
+  font-size:.8rem;letter-spacing:.04em;outline:none;
+}
+.input-wrap input::placeholder{color:rgba(232,237,242,.2)}
+
+/* history */
+.history-label{
+  font-family:'DM Mono',monospace;font-size:.64rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  margin-bottom:.5rem;display:block;
+}
+.history{
+  display:flex;flex-direction:column;gap:.3rem;
+  margin-bottom:1.2rem;min-height:28px;
+}
+.history-item{
+  display:flex;align-items:center;gap:.6rem;
+  font-family:'DM Mono',monospace;font-size:.7rem;
+  color:rgba(0,229,160,.5);letter-spacing:.04em;cursor:pointer;
+  transition:color .2s;padding:.1rem 0;
+}
+.history-item:hover{color:var(--accent)}
+.history-item::before{content:'↗';font-size:.6rem}
+.history-empty{
+  font-family:'DM Mono',monospace;font-size:.68rem;
+  color:rgba(232,237,242,.12);letter-spacing:.06em;
+}
+
+.btn{
+  width:100%;padding:.85rem;
+  background:var(--accent);color:#080c10;border:none;
+  font-family:'DM Mono',monospace;font-size:.78rem;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;
+  cursor:pointer;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;gap:.6rem;
+  transition:opacity .2s,transform .2s;
+}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+
+.bottombar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 2rem;border-top:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.66rem;color:var(--muted);letter-spacing:.1em;
+  flex-shrink:0;
+}
+.status-row{display:flex;align-items:center;gap:1.5rem}
+.status-item{display:flex;align-items:center;gap:.4rem}
+.sdot{width:6px;height:6px;border-radius:50%}
+.s-ok{background:var(--accent)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="bar">
+    <div class="bar-left">
+      <div class="dot"></div>
+      <span class="bar-label">GET /</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:2rem">
+      <a href="index.html" class="back">← Dashboard</a>
+      <div class="bar-right" id="ts"></div>
+    </div>
+  </div>
+
+  <main>
+    <div class="card">
+
+      <div class="card-header">
+        <div>
+          <div class="tag">HTTP Request</div>
+          <div class="card-title">Redirect to Path</div>
+        </div>
+        <div class="method-badge">GET</div>
+      </div>
+
+      <div class="card-body">
+
+        <div class="field">
+          <label class="field-label">Target Path</label>
+          <div class="input-wrap">
+            <span class="input-prefix" id="origin-label">localhost</span>
+            <input id="path" type="text" placeholder="/index.html" autocomplete="off"
+              onkeydown="if(event.key==='Enter')redirect()"/>
+          </div>
+        </div>
+
+        <span class="history-label">Recent</span>
+        <div class="history" id="history">
+          <span class="history-empty">No recent paths yet</span>
+        </div>
+
+        <button class="btn" onclick="redirect()">↗ Go</button>
+
+      </div>
+    </div>
+  </main>
+
+  <div class="bottombar">
+    <div class="status-row">
+      <div class="status-item"><div class="sdot s-ok"></div>Server Ready</div>
+    </div>
+    <span id="host"></span>
+  </div>
+
+</div>
+<script>
+  const HISTORY_KEY = 'get_history';
+
+  function getHistory(){
+    try{ return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+    catch{ return []; }
+  }
+  function saveHistory(path){
+    let h = getHistory().filter(p => p !== path);
+    h.unshift(path);
+    h = h.slice(0,5);
+    try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }catch{}
+  }
+  function renderHistory(){
+    const h = getHistory();
+    const el = document.getElementById('history');
+    if(!h.length){
+      el.innerHTML = '<span class="history-empty">No recent paths yet</span>';
+      return;
+    }
+    el.innerHTML = h.map(p =>
+      `<div class="history-item" onclick="usePath('${p}')">${p}</div>`
+    ).join('');
+  }
+  function usePath(p){
+    document.getElementById('path').value = p;
+    document.getElementById('path').focus();
+  }
+  function redirect(){
+    const path = document.getElementById('path').value.trim() || '/';
+    saveHistory(path);
+    window.location.href = path;
+  }
+
+  // origin label
+  document.getElementById('origin-label').textContent = window.location.hostname || 'localhost';
+  document.getElementById('host').textContent = window.location.hostname || 'localhost';
+
+  renderHistory();
+
+  const pad = n => String(n).padStart(2,'0');
+  const tick = () => {
+    const d = new Date();
+    document.getElementById('ts').textContent =
+      `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}  ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+  tick(); setInterval(tick,1000);
+</script>
+</body>
+</html>

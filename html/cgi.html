@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CGI Tester — Testing Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c10;--border:rgba(255,255,255,.05);
+  --text:#e8edf2;--muted:rgba(232,237,242,.35);
+  --accent:#00d4d4;--surface:rgba(13,19,24,.9);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;overflow:hidden}
+
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 20%,transparent 100%);
+  pointer-events:none;
+}
+body::after{
+  content:'';position:fixed;width:600px;height:600px;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(0,212,212,.05) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 2rem;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.bar-left{display:flex;align-items:center;gap:.8rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,212,212,.4)}50%{opacity:.7;box-shadow:0 0 0 5px rgba(0,212,212,0)}}
+.bar-label{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);letter-spacing:.14em}
+.bar-right{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em}
+.back{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em;text-decoration:none;transition:color .2s}
+.back:hover{color:var(--text)}
+
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;position:relative}
+
+.card{
+  width:100%;max-width:480px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top:2px solid var(--accent);
+  border-radius:4px;
+  backdrop-filter:blur(16px);
+  animation:fadeup .5s ease both;
+}
+@keyframes fadeup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.card-header{
+  padding:1.6rem 2rem 1.2rem;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;
+}
+.tag{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-family:'DM Mono',monospace;font-size:.64rem;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.5rem;
+}
+.tag::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.06em;color:var(--text)}
+.method-badge{
+  font-family:'DM Mono',monospace;font-size:.66rem;letter-spacing:.14em;
+  color:var(--accent);border:1px solid rgba(0,212,212,.25);
+  padding:.25rem .6rem;border-radius:2px;margin-top:.2rem;
+}
+
+.card-body{padding:1.8rem 2rem}
+
+/* endpoint row */
+.endpoint-row{
+  display:flex;align-items:stretch;
+  border:1px solid var(--border);border-radius:2px;overflow:hidden;
+  margin-bottom:1.2rem;transition:border-color .2s;
+}
+.endpoint-row:focus-within{border-color:rgba(0,212,212,.35)}
+.endpoint-method{
+  display:flex;align-items:center;padding:0 .9rem;
+  background:rgba(0,212,212,.05);border-right:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);
+  letter-spacing:.1em;flex-shrink:0;
+}
+.endpoint-row input{
+  flex:1;padding:.75rem 1rem;background:rgba(255,255,255,.02);border:none;
+  color:var(--text);font-family:'DM Mono',monospace;
+  font-size:.78rem;letter-spacing:.04em;outline:none;
+}
+.endpoint-row input::placeholder{color:rgba(232,237,242,.2)}
+
+/* fields */
+.fields-label{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:.6rem;
+}
+.section-label{
+  font-family:'DM Mono',monospace;font-size:.64rem;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+}
+.add-field-btn{
+  font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.12em;
+  color:var(--accent);background:none;border:1px solid rgba(0,212,212,.2);
+  border-radius:2px;padding:.2rem .6rem;cursor:pointer;transition:background .2s;
+}
+.add-field-btn:hover{background:rgba(0,212,212,.08)}
+
+.field-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.2rem}
+
+.field-row{
+  display:flex;align-items:stretch;gap:0;
+  border:1px solid var(--border);border-radius:2px;overflow:hidden;
+  transition:border-color .2s;
+}
+.field-row:focus-within{border-color:rgba(0,212,212,.25)}
+.field-row input{
+  flex:1;padding:.65rem .9rem;background:rgba(255,255,255,.02);border:none;
+  color:var(--text);font-family:'DM Mono',monospace;font-size:.76rem;letter-spacing:.04em;outline:none;
+}
+.field-row input::placeholder{color:rgba(232,237,242,.2)}
+.field-row input.key-input{
+  max-width:130px;border-right:1px solid var(--border);
+  color:var(--accent);
+}
+.field-remove{
+  display:flex;align-items:center;padding:0 .75rem;
+  border-left:1px solid var(--border);
+  color:rgba(255,60,60,.3);font-size:.8rem;cursor:pointer;
+  transition:color .2s,background .2s;background:transparent;border-top:none;border-bottom:none;border-right:none;
+}
+.field-remove:hover{color:#ff3c3c;background:rgba(255,60,60,.05)}
+
+/* enctype toggle */
+.toggle-row{
+  display:flex;gap:.4rem;margin-bottom:1.4rem;
+}
+.toggle-opt{
+  flex:1;padding:.5rem;text-align:center;
+  font-family:'DM Mono',monospace;font-size:.64rem;letter-spacing:.1em;
+  border:1px solid var(--border);border-radius:2px;cursor:pointer;
+  color:var(--muted);transition:all .2s;background:transparent;
+}
+.toggle-opt.active{
+  border-color:rgba(0,212,212,.35);color:var(--accent);
+  background:rgba(0,212,212,.06);
+}
+
+.btn{
+  width:100%;padding:.85rem;
+  background:var(--accent);color:#080c10;border:none;
+  font-family:'DM Mono',monospace;font-size:.78rem;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;
+  cursor:pointer;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;gap:.6rem;
+  transition:opacity .2s,transform .2s;
+}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+
+.bottombar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 2rem;border-top:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.66rem;color:var(--muted);letter-spacing:.1em;
+  flex-shrink:0;
+}
+.status-row{display:flex;align-items:center;gap:1.5rem}
+.status-item{display:flex;align-items:center;gap:.4rem}
+.sdot{width:6px;height:6px;border-radius:50%}
+.s-ok{background:#00e5a0}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="bar">
+    <div class="bar-left">
+      <div class="dot"></div>
+      <span class="bar-label">POST /cgi/post.php</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:2rem">
+      <a href="index.html" class="back">← Dashboard</a>
+      <div class="bar-right" id="ts"></div>
+    </div>
+  </div>
+
+  <main>
+    <div class="card">
+
+      <div class="card-header">
+        <div>
+          <div class="tag">Common Gateway Interface</div>
+          <div class="card-title">CGI Tester</div>
+        </div>
+        <div class="method-badge">POST</div>
+      </div>
+
+      <div class="card-body">
+        <form action="/cgi/post.php" method="POST" enctype="multipart/form-data" id="cgi-form">
+
+          <!-- Endpoint -->
+          <div class="section-label" style="margin-bottom:.45rem">Endpoint</div>
+          <div class="endpoint-row">
+            <div class="endpoint-method">POST</div>
+            <input type="text" id="endpoint-input" value="/cgi/post.php" placeholder="/cgi/post.php"
+              oninput="document.getElementById('cgi-form').action=this.value"/>
+          </div>
+
+          <!-- Enctype -->
+          <div class="section-label" style="margin-bottom:.5rem">Encoding</div>
+          <div class="toggle-row">
+            <button type="button" class="toggle-opt active" onclick="setEnc('multipart/form-data',this)">multipart/form-data</button>
+          </div>
+
+          <!-- Fields -->
+          <div class="fields-label">
+            <span class="section-label">Form Fields</span>
+            <button type="button" class="add-field-btn" onclick="addField()">+ Add Field</button>
+          </div>
+          <div class="field-list" id="field-list">
+            <div class="field-row">
+              <input class="key-input" type="text" name="_key" placeholder="name" oninput="syncName(this)"/>
+              <input type="text" name="name" placeholder="value"/>
+              <button type="button" class="field-remove" onclick="removeField(this)">✕</button>
+            </div>
+            <div class="field-row">
+              <input class="key-input" type="text" name="_key" placeholder="age" oninput="syncName(this)"/>
+              <input type="text" name="age" placeholder="value"/>
+              <button type="button" class="field-remove" onclick="removeField(this)">✕</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn">⇢ Send to CGI</button>
+
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <div class="bottombar">
+    <div class="status-row">
+      <div class="status-item"><div class="sdot s-ok"></div>Server Ready</div>
+    </div>
+    <span id="host"></span>
+  </div>
+
+</div>
+<script>
+  function setEnc(type, el){
+    document.getElementById('cgi-form').enctype = type;
+    document.querySelectorAll('.toggle-opt').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function addField(){
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    row.innerHTML = `
+      <input class="key-input" type="text" name="_key" placeholder="key" oninput="syncName(this)"/>
+      <input type="text" name="value" placeholder="value"/>
+      <button type="button" class="field-remove" onclick="removeField(this)">✕</button>`;
+    document.getElementById('field-list').appendChild(row);
+  }
+
+  function removeField(btn){
+    const list = document.getElementById('field-list');
+    if(list.children.length > 1) btn.closest('.field-row').remove();
+  }
+
+  function syncName(keyInput){
+    const val = keyInput.value.trim() || 'value';
+    const valueInput = keyInput.nextElementSibling;
+    if(valueInput) valueInput.name = val;
+  }
+
+  const pad = n => String(n).padStart(2,'0');
+  const tick = () => {
+    const d = new Date();
+    document.getElementById('ts').textContent =
+      `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}  ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+  tick(); setInterval(tick,1000);
+  document.getElementById('host').textContent = window.location.hostname || 'localhost';
+</script>
+</body>
+</html>

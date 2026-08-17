@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>XO — Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c10;--border:rgba(255,255,255,.05);
+  --text:#e8edf2;--muted:rgba(232,237,242,.35);
+  --accent:#a855f7;--surface:rgba(13,19,24,.9);
+  --x-color:#a855f7;
+  --o-color:#00e5a0;
+  --win-color:#ffd700;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;overflow:hidden}
+
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 20%,transparent 100%);
+  pointer-events:none;
+}
+body::after{
+  content:'';position:fixed;width:600px;height:600px;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(168,85,247,.06) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* TOP BAR */
+.bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 2rem;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.bar-left{display:flex;align-items:center;gap:.8rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(168,85,247,.4)}50%{opacity:.7;box-shadow:0 0 0 5px rgba(168,85,247,0)}}
+.bar-label{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);letter-spacing:.14em}
+.bar-right{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em}
+
+/* MAIN */
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;position:relative}
+
+.card{
+  width:100%;max-width:480px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top:2px solid var(--accent);
+  border-radius:4px;
+  backdrop-filter:blur(16px);
+  animation:fadeup .5s ease both;
+}
+@keyframes fadeup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.card-header{
+  padding:1.4rem 2rem 1.1rem;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;
+}
+.tag{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-family:'DM Mono',monospace;font-size:.64rem;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.5rem;
+}
+.tag::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.06em;color:var(--text)}
+.round-badge{
+  font-family:'DM Mono',monospace;font-size:.66rem;letter-spacing:.14em;
+  color:var(--accent);border:1px solid rgba(168,85,247,.25);
+  padding:.25rem .6rem;border-radius:2px;margin-top:.2rem;
+  white-space:nowrap;
+}
+
+.card-body{padding:1.6rem 2rem}
+
+/* SCORE STRIP */
+.score-strip{
+  display:flex;align-items:center;gap:0;
+  border:1px solid var(--border);border-radius:2px;
+  overflow:hidden;margin-bottom:1.4rem;
+}
+.score-block{
+  flex:1;padding:.7rem .9rem;text-align:center;
+  border-right:1px solid var(--border);
+  transition:background .3s;
+}
+.score-block:last-child{border-right:none}
+.score-block.active-x{background:rgba(168,85,247,.08)}
+.score-block.active-o{background:rgba(0,229,160,.06)}
+.score-name{
+  font-family:'DM Mono',monospace;font-size:.6rem;
+  letter-spacing:.18em;text-transform:uppercase;margin-bottom:.2rem;
+}
+.score-name.x{color:var(--x-color)}
+.score-name.o{color:var(--o-color)}
+.score-name.draw{color:var(--muted)}
+.score-num{
+  font-family:'Bebas Neue',sans-serif;font-size:1.6rem;
+  letter-spacing:.08em;
+}
+.score-num.x{color:var(--x-color)}
+.score-num.o{color:var(--o-color)}
+.score-num.draw{color:var(--muted)}
+
+/* STATUS */
+.status-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.2rem;
+}
+.status-text{
+  font-family:'DM Mono',monospace;font-size:.72rem;
+  letter-spacing:.1em;color:var(--muted);
+  transition:color .3s;
+}
+.status-text.x{color:var(--x-color)}
+.status-text.o{color:var(--o-color)}
+.status-text.win{color:var(--win-color)}
+.status-text.draw{color:var(--muted)}
+.turn-indicator{
+  display:flex;align-items:center;gap:.4rem;
+  font-family:'DM Mono',monospace;font-size:.64rem;
+  color:var(--muted);letter-spacing:.1em;
+}
+.turn-sym{
+  font-family:'Bebas Neue',sans-serif;font-size:1rem;
+  transition:color .3s;
+}
+.turn-sym.x{color:var(--x-color)}
+.turn-sym.o{color:var(--o-color)}
+
+/* BOARD */
+.board{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:6px;margin-bottom:1.4rem;
+  aspect-ratio:1;
+}
+.cell{
+  background:rgba(255,255,255,.015);
+  border:1px solid var(--border);
+  border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2rem,8vw,3.2rem);
+  letter-spacing:.04em;
+  position:relative;
+  overflow:hidden;
+  transition:background .15s,border-color .15s,transform .1s;
+  user-select:none;
+}
+.cell:hover:not(.taken){
+  background:rgba(168,85,247,.06);
+  border-color:rgba(168,85,247,.2);
+}
+.cell.taken{cursor:default}
+.cell.x-cell{color:var(--x-color)}
+.cell.o-cell{color:var(--o-color)}
+
+/* ripple on click */
+.cell::after{
+  content:'';position:absolute;inset:0;
+  background:rgba(168,85,247,.08);
+  opacity:0;transform:scale(0);
+  border-radius:2px;
+  transition:transform .3s,opacity .3s;
+}
+.cell.pop::after{opacity:1;transform:scale(1)}
+
+/* win highlight */
+.cell.win-cell{
+  background:rgba(255,215,0,.07);
+  border-color:rgba(255,215,0,.3);
+  animation:winpulse 1s ease-in-out infinite alternate;
+}
+.cell.win-cell.x-cell{color:var(--win-color)}
+.cell.win-cell.o-cell{color:var(--win-color)}
+
+@keyframes winpulse{
+  from{background:rgba(255,215,0,.04);border-color:rgba(255,215,0,.2)}
+  to{background:rgba(255,215,0,.12);border-color:rgba(255,215,0,.5)}
+}
+
+/* symbol drop-in */
+@keyframes dropin{
+  from{opacity:0;transform:scale(.4) rotate(-15deg)}
+  to{opacity:1;transform:scale(1) rotate(0deg)}
+}
+.cell.animate-in .sym{animation:dropin .2s cubic-bezier(.34,1.56,.64,1) both}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:0 0 1.2rem}
+
+/* BUTTONS */
+.actions{display:flex;gap:.6rem}
+.btn{
+  flex:1;padding:.8rem;
+  border:none;border-radius:2px;
+  font-family:'DM Mono',monospace;font-size:.74rem;
+  letter-spacing:.14em;text-transform:uppercase;
+  cursor:pointer;transition:opacity .2s,transform .2s;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+}
+.btn:hover{opacity:.85;transform:translateY(-1px)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-ghost{
+  background:transparent;color:var(--muted);
+  border:1px solid var(--border);
+}
+.btn-ghost:hover{border-color:rgba(255,255,255,.15);color:var(--text)}
+
+/* BOTTOM BAR */
+.bottombar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 2rem;border-top:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.66rem;color:var(--muted);letter-spacing:.1em;
+  flex-shrink:0;
+}
+.status-row{display:flex;align-items:center;gap:1.5rem}
+.status-item{display:flex;align-items:center;gap:.4rem}
+.sdot{width:6px;height:6px;border-radius:50%;background:#00e5a0}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="bar">
+    <div class="bar-left">
+      <div class="dot"></div>
+      <span class="bar-label">XO Game</span>
+    </div>
+    <div class="bar-right" id="ts"></div>
+  </div>
+
+  <main>
+    <div class="card">
+
+      <div class="card-header">
+        <div>
+          <div class="tag">Two Player</div>
+          <div class="card-title">Tic-Tac-Toe</div>
+        </div>
+        <div class="round-badge" id="round-badge">ROUND 1</div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Scores -->
+        <div class="score-strip">
+          <div class="score-block active-x" id="blk-x">
+            <div class="score-name x">Player X</div>
+            <div class="score-num x" id="score-x">0</div>
+          </div>
+          <div class="score-block" id="blk-draw">
+            <div class="score-name draw">Draw</div>
+            <div class="score-num draw" id="score-draw">0</div>
+          </div>
+          <div class="score-block" id="blk-o">
+            <div class="score-name o">Player O</div>
+            <div class="score-num o" id="score-o">0</div>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="status-bar">
+          <span class="status-text x" id="status-text">Player X's turn</span>
+          <div class="turn-indicator">
+            TURN <span class="turn-sym x" id="turn-sym">X</span>
+          </div>
+        </div>
+
+        <!-- Board -->
+        <div class="board" id="board">
+          <!-- cells injected by JS -->
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button class="btn btn-primary" onclick="resetRound()">↺ New Round</button>
+          <button class="btn btn-ghost" onclick="resetAll()">✕ Reset All</button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <div class="bottombar">
+    <div class="status-row">
+      <div class="status-item"><div class="sdot"></div>Game Active</div>
+    </div>
+    <span>XO / v1.0</span>
+  </div>
+
+</div>
+
+<script>
+const WINS = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+
+let board = Array(9).fill(null);
+let current = 'X';
+let gameOver = false;
+let scores = {X:0,O:0,D:0};
+let round = 1;
+
+function buildBoard(){
+  const el = document.getElementById('board');
+  el.innerHTML = '';
+  board.forEach((_,i)=>{
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.id = `cell-${i}`;
+    cell.innerHTML = '<span class="sym"></span>';
+    cell.addEventListener('click',()=>play(i));
+    el.appendChild(cell);
+  });
+}
+
+function play(i){
+  if(gameOver || board[i]) return;
+  board[i] = current;
+
+  const cell = document.getElementById(`cell-${i}`);
+  cell.classList.add('taken', current==='X'?'x-cell':'o-cell', 'animate-in');
+  cell.querySelector('.sym').textContent = current;
+
+  // ripple
+  cell.classList.add('pop');
+  setTimeout(()=>cell.classList.remove('pop'), 300);
+
+  const win = checkWin();
+  if(win){
+    gameOver = true;
+    scores[current]++;
+    updateScores();
+    highlightWin(win);
+    setStatus(`Player ${current} wins! 🎉`, 'win');
+    setTurnSym(current, true);
+    updateScoreBlocks(null);
+  } else if(board.every(Boolean)){
+    gameOver = true;
+    scores.D++;
+    updateScores();
+    setStatus("It's a draw!", 'draw');
+    updateScoreBlocks(null);
+  } else {
+    current = current==='X'?'O':'X';
+    setStatus(`Player ${current}'s turn`, current.toLowerCase());
+    setTurnSym(current);
+    updateScoreBlocks(current);
+  }
+}
+
+function checkWin(){
+  for(const combo of WINS){
+    const [a,b,c]=combo;
+    if(board[a]&&board[a]===board[b]&&board[a]===board[c]) return combo;
+  }
+  return null;
+}
+
+function highlightWin(combo){
+  combo.forEach(i=>{
+    document.getElementById(`cell-${i}`).classList.add('win-cell');
+  });
+}
+
+function setStatus(msg, cls){
+  const el = document.getElementById('status-text');
+  el.textContent = msg;
+  el.className = `status-text ${cls}`;
+}
+
+function setTurnSym(sym, hide=false){
+  const el = document.getElementById('turn-sym');
+  el.textContent = hide ? '' : sym;
+  el.className = `turn-sym ${sym.toLowerCase()}`;
+}
+
+function updateScores(){
+  document.getElementById('score-x').textContent = scores.X;
+  document.getElementById('score-o').textContent = scores.O;
+  document.getElementById('score-draw').textContent = scores.D;
+}
+
+function updateScoreBlocks(active){
+  document.getElementById('blk-x').className = 'score-block' + (active==='X'?' active-x':'');
+  document.getElementById('blk-o').className = 'score-block' + (active==='O'?' active-o':'');
+}
+
+function resetRound(){
+  board = Array(9).fill(null);
+  current = 'X';
+  gameOver = false;
+  round++;
+  document.getElementById('round-badge').textContent = `ROUND ${round}`;
+  buildBoard();
+  setStatus("Player X's turn", 'x');
+  setTurnSym('X');
+  updateScoreBlocks('X');
+}
+
+function resetAll(){
+  scores = {X:0,O:0,D:0};
+  round = 1;
+  document.getElementById('round-badge').textContent = 'ROUND 1';
+  updateScores();
+  board = Array(9).fill(null);
+  current = 'X';
+  gameOver = false;
+  buildBoard();
+  setStatus("Player X's turn", 'x');
+  setTurnSym('X');
+  updateScoreBlocks('X');
+}
+
+// Init
+buildBoard();
+updateScoreBlocks('X');
+
+// Clock
+const pad = n=>String(n).padStart(2,'0');
+const tick=()=>{
+  const d=new Date();
+  document.getElementById('ts').textContent=
+    `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}  ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+};
+tick(); setInterval(tick,1000);
+</script>
+</body>
+</html>

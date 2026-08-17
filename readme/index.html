@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Webserv — README</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c10;
+  --border:rgba(255,255,255,.05);
+  --border-md:rgba(255,255,255,.09);
+  --text:#e8edf2;
+  --muted:rgba(232,237,242,.38);
+  --muted2:rgba(232,237,242,.18);
+  --accent:#a855f7;
+  --accent2:#00e5a0;
+  --surface:rgba(13,19,24,.92);
+  --surface2:rgba(255,255,255,.025);
+  --code-bg:rgba(0,0,0,.45);
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Syne',sans-serif;
+  font-size:15px;line-height:1.7;
+  min-height:100vh;overflow-x:hidden;
+}
+
+/* GRID BACKGROUND */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 100% 100% at 50% 0%,black 30%,transparent 100%);
+  pointer-events:none;
+}
+body::after{
+  content:'';position:fixed;width:800px;height:500px;
+  top:0;left:50%;transform:translateX(-50%);
+  background:radial-gradient(ellipse,rgba(168,85,247,.07) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+/* TOP BAR */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 2.5rem;
+  background:rgba(8,12,16,.88);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);
+}
+.bar-left{display:flex;align-items:center;gap:.8rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(168,85,247,.5)}50%{opacity:.7;box-shadow:0 0 0 6px rgba(168,85,247,0)}}
+.bar-brand{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);letter-spacing:.16em}
+.bar-right{display:flex;align-items:center;gap:1.2rem}
+.bar-clock{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);letter-spacing:.1em}
+.bar-badge{
+  font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.14em;
+  border:1px solid rgba(168,85,247,.28);color:var(--accent);
+  padding:.2rem .55rem;border-radius:2px;
+}
+
+/* PAGE LAYOUT */
+.page{
+  position:relative;z-index:1;
+  max-width:860px;margin:0 auto;
+  padding:3rem 2.5rem 5rem;
+}
+
+/* HERO */
+.hero{
+  padding:2.5rem 0 2rem;
+  border-bottom:1px solid var(--border);
+  margin-bottom:2.5rem;
+  animation:fadeup .6s ease both;
+}
+@keyframes fadeup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:.45rem;
+  font-family:'DM Mono',monospace;font-size:.64rem;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.9rem;
+}
+.hero-tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.hero h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(3rem,8vw,5.5rem);
+  letter-spacing:.06em;line-height:.95;
+  color:var(--text);margin-bottom:1rem;
+}
+.hero h1 span{color:var(--accent)}
+.hero-desc{
+  max-width:580px;color:var(--muted);
+  font-size:.95rem;line-height:1.75;
+  margin-bottom:1.5rem;
+}
+.hero-meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.pill{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-family:'DM Mono',monospace;font-size:.62rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  padding:.28rem .7rem;border-radius:2px;
+  border:1px solid var(--border-md);color:var(--muted);
+  background:var(--surface2);
+}
+.pill.accent{border-color:rgba(168,85,247,.3);color:var(--accent);background:rgba(168,85,247,.06)}
+.pill.green{border-color:rgba(0,229,160,.25);color:var(--accent2);background:rgba(0,229,160,.05)}
+.pill::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor}
+
+/* FEATURES GRID */
+.features{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:.6rem;margin-bottom:2.5rem;
+  animation:fadeup .6s .1s ease both;
+}
+.feat{
+  padding:.9rem 1rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:2px;
+  transition:border-color .2s,background .2s;
+}
+.feat:hover{border-color:rgba(168,85,247,.2);background:rgba(168,85,247,.04)}
+.feat-icon{font-size:1rem;margin-bottom:.4rem}
+.feat-label{
+  font-family:'DM Mono',monospace;font-size:.65rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.15rem;
+}
+.feat-desc{font-size:.8rem;color:var(--muted);line-height:1.5}
+
+/* SECTION */
+.section{
+  margin-bottom:2.5rem;
+  animation:fadeup .6s .15s ease both;
+}
+.section-header{
+  display:flex;align-items:center;gap:.8rem;
+  margin-bottom:1.1rem;
+  padding-bottom:.7rem;
+  border-bottom:1px solid var(--border);
+}
+.section-num{
+  font-family:'Bebas Neue',sans-serif;font-size:1rem;
+  color:var(--muted2);letter-spacing:.1em;flex-shrink:0;
+}
+.section h2{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.5rem;letter-spacing:.07em;
+  color:var(--text);
+}
+.section h3{
+  font-family:'DM Mono',monospace;font-size:.8rem;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin:1.4rem 0 .6rem;
+}
+.section p{color:var(--muted);font-size:.92rem;line-height:1.75;margin-bottom:.8rem}
+.section ul{
+  list-style:none;
+  display:flex;flex-direction:column;gap:.3rem;
+  margin-bottom:.8rem;
+}
+.section ul li{
+  display:flex;align-items:flex-start;gap:.6rem;
+  font-size:.9rem;color:var(--muted);line-height:1.6;
+}
+.section ul li::before{
+  content:'';width:4px;height:4px;border-radius:50%;
+  background:var(--accent);flex-shrink:0;margin-top:.55em;
+}
+
+/* REQUIREMENT CARDS */
+.req-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:.5rem;margin-bottom:1rem;
+}
+.req-card{
+  padding:.65rem .9rem;
+  background:var(--code-bg);
+  border:1px solid var(--border);
+  border-radius:2px;
+}
+.req-card-lbl{
+  font-family:'DM Mono',monospace;font-size:.58rem;
+  letter-spacing:.15em;text-transform:uppercase;
+  color:var(--muted2);margin-bottom:.2rem;
+}
+.req-card-val{
+  font-family:'DM Mono',monospace;font-size:.78rem;
+  color:var(--accent2);
+}
+
+/* CODE BLOCK */
+.code-block{
+  background:var(--code-bg);
+  border:1px solid var(--border);
+  border-left:2px solid var(--accent);
+  border-radius:2px;
+  padding:1rem 1.2rem;
+  margin:.6rem 0 1.2rem;
+  overflow-x:auto;
+  position:relative;
+}
+.code-block::before{
+  content:attr(data-label);
+  position:absolute;top:.5rem;right:.8rem;
+  font-family:'DM Mono',monospace;font-size:.55rem;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted2);
+}
+.code-block code{
+  font-family:'DM Mono',monospace;font-size:.82rem;
+  color:#e8edf2;line-height:1.7;white-space:pre;
+  display:block;
+}
+.code-block code .cmd{color:var(--accent2)}
+.code-block code .flag{color:#ffd700}
+.code-block code .comment{color:rgba(232,237,242,.25)}
+
+/* INLINE CODE */
+code.inline{
+  font-family:'DM Mono',monospace;font-size:.8em;
+  color:var(--accent);
+  background:rgba(168,85,247,.1);
+  padding:.1em .35em;border-radius:2px;
+}
+
+/* DIVIDER */
+.divider{
+  height:1px;background:var(--border);
+  margin:2.5rem 0;
+  position:relative;
+}
+.divider::after{
+  content:'//';
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  font-family:'DM Mono',monospace;font-size:.6rem;
+  color:var(--muted2);letter-spacing:.1em;
+  background:var(--bg);padding:0 .8rem;
+}
+
+/* RESOURCE CARDS */
+.res-list{display:flex;flex-direction:column;gap:.5rem}
+.res-card{
+  display:flex;align-items:flex-start;gap:1rem;
+  padding:.8rem 1rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:2px;
+  text-decoration:none;
+  transition:border-color .2s,background .2s;
+}
+.res-card:hover{border-color:rgba(0,229,160,.25);background:rgba(0,229,160,.03)}
+.res-card-icon{
+  font-family:'DM Mono',monospace;font-size:.62rem;
+  letter-spacing:.1em;color:var(--muted2);
+  padding:.25rem .5rem;border:1px solid var(--border);
+  border-radius:2px;flex-shrink:0;margin-top:.1rem;
+}
+.res-card-body{}
+.res-card-title{font-size:.88rem;color:var(--text);margin-bottom:.15rem;font-weight:600}
+.res-card-url{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--accent2);opacity:.7}
+
+/* AI NOTE */
+.ai-note{
+  margin-top:1.2rem;
+  padding:.8rem 1.1rem;
+  background:rgba(255,60,60,.04);
+  border:1px solid rgba(255,60,60,.15);
+  border-left:2px solid #ff3c3c;
+  border-radius:2px;
+  display:flex;align-items:center;gap:.8rem;
+}
+.ai-note-icon{
+  font-family:'DM Mono',monospace;font-size:.6rem;
+  letter-spacing:.1em;color:#ff3c3c;
+  border:1px solid rgba(255,60,60,.3);
+  padding:.2rem .45rem;border-radius:2px;flex-shrink:0;
+}
+.ai-note-text{font-family:'DM Mono',monospace;font-size:.75rem;color:rgba(255,120,120,.7);line-height:1.5}
+
+/* BOTTOM BAR */
+.bottombar{
+  position:relative;z-index:1;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 2.5rem;
+  border-top:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.64rem;
+  color:var(--muted);letter-spacing:.1em;
+}
+.sdot{width:5px;height:5px;border-radius:50%;background:var(--accent2);display:inline-block;margin-right:.4rem;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="bar-left">
+    <div class="dot"></div>
+    <span class="bar-brand">README.md</span>
+  </div>
+  <div class="bar-right">
+    <div class="bar-clock" id="ts"></div>
+    <div class="bar-badge">42 PROJECT</div>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">C++ / Network Programming</div>
+    <h1>Web<span>serv</span></h1>
+    <p class="hero-desc">
+      A custom HTTP server built from scratch in C++ as part of the 42 curriculum.
+      Understand how web servers work by implementing the HTTP/1.0 protocol with low-level network programming and event-driven architecture.
+    </p>
+    <div class="hero-meta">
+      <span class="pill accent">HTTP/1.0</span>
+      <span class="pill green">C++</span>
+      <span class="pill">Unix / Linux</span>
+      <span class="pill">42 School</span>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="features">
+    <div class="feat">
+      <div class="feat-icon">⟳</div>
+      <div class="feat-label">HTTP Methods</div>
+      <div class="feat-desc">GET, POST and DELETE request handling</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">◫</div>
+      <div class="feat-label">Static Files</div>
+      <div class="feat-desc">Serve static content from disk</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⌬</div>
+      <div class="feat-label">CGI Scripts</div>
+      <div class="feat-desc">Execute dynamic CGI programs</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⋮⋮</div>
+      <div class="feat-label">Multi-Client</div>
+      <div class="feat-desc">Simultaneous connection management</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">◈</div>
+      <div class="feat-label">Config File</div>
+      <div class="feat-desc">Custom configuration file support</div>
+    </div>
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Description</h2>
+    </div>
+    <p>
+      <strong style="color:var(--text)">Webserv</strong> is a custom HTTP server developed in C++ as part of the 42 curriculum.
+      The goal of this project is to understand how web servers work by building one from scratch, following the HTTP/1.0 protocol.
+    </p>
+    <p>The server is designed to:</p>
+    <ul>
+      <li>Handle HTTP requests (GET, POST, DELETE)</li>
+      <li>Serve static files</li>
+      <li>Execute CGI scripts</li>
+      <li>Manage multiple clients simultaneously</li>
+      <li>Support configuration via a custom configuration file</li>
+    </ul>
+    <p>
+      This project focuses on low-level network programming, event-driven architecture
+      (e.g., <code class="inline">select</code>, <code class="inline">poll</code>, or <code class="inline">epoll</code>),
+      and proper resource management.
+    </p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- INSTRUCTIONS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>Instructions</h2>
+    </div>
+
+    <h3>Requirements</h3>
+    <div class="req-grid">
+      <div class="req-card"><div class="req-card-lbl">Compiler</div><div class="req-card-val">g++ / clang++</div></div>
+      <div class="req-card"><div class="req-card-lbl">Build</div><div class="req-card-val">Make</div></div>
+      <div class="req-card"><div class="req-card-lbl">System</div><div class="req-card-val">Linux / macOS</div></div>
+    </div>
+
+    <h3>Compilation</h3>
+    <p>Clone the repository and compile the project using:</p>
+    <div class="code-block" data-label="bash">
+      <code><span class="cmd">git clone</span> &lt;your-repo-url&gt;
+<span class="cmd">cd</span> webserv
+<span class="cmd">make</span></code>
+    </div>
+    <p>This will generate the executable:</p>
+    <div class="code-block" data-label="output">
+      <code><span class="cmd">./webserv</span></code>
+    </div>
+
+    <h3>Usage</h3>
+    <p>Run the server with a configuration file:</p>
+    <div class="code-block" data-label="bash">
+      <code><span class="cmd">./webserv</span> <span class="flag">&lt;config_file&gt;</span></code>
+    </div>
+    <p>Example:</p>
+    <div class="code-block" data-label="example">
+      <code><span class="cmd">./webserv</span> <span class="flag">default.conf</span></code>
+    </div>
+    <p>If no configuration file is provided, a default configuration may be used (depending on implementation).</p>
+
+    <h3>Testing</h3>
+    <p>You can test the server using:</p>
+    <ul>
+      <li>A web browser — <code class="inline">http://localhost:&lt;port&gt;</code></li>
+      <li><code class="inline">curl</code> from the command line</li>
+    </ul>
+    <div class="code-block" data-label="curl">
+      <code><span class="cmd">curl</span> http://localhost:8080</code>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- RESOURCES -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>Resources</h2>
+    </div>
+
+    <h3>Documentation &amp; References</h3>
+    <div class="res-list">
+      <a class="res-card" href="https://datatracker.ietf.org/doc/html/rfc1945" target="_blank">
+        <div class="res-card-icon">RFC</div>
+        <div class="res-card-body">
+          <div class="res-card-title">RFC 1945 — HTTP/1.0 Specification</div>
+          <div class="res-card-url">datatracker.ietf.org/doc/html/rfc1945</div>
+        </div>
+      </a>
+    </div>
+
+    <h3>Tutorials &amp; Articles</h3>
+    <div class="res-list">
+      <div class="res-card" style="cursor:default">
+        <div class="res-card-icon">DOC</div>
+        <div class="res-card-body">
+          <div class="res-card-title">Socket Programming in C/C++</div>
+          <div class="res-card-url" style="color:var(--muted2)">low-level network I/O reference</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Use of AI</h3>
+    <div class="ai-note">
+      <div class="ai-note-icon">NOTE</div>
+      <div class="ai-note-text">we don't do that here</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottombar">
+  <span><span class="sdot"></span>webserv / README.md</span>
+  <span id="ts2"></span>
+</div>
+
+<script>
+const pad = n => String(n).padStart(2,'0');
+const tick = () => {
+  const d = new Date();
+  const str = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}  ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  document.getElementById('ts').textContent = str;
+  document.getElementById('ts2').textContent = str;
+};
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>

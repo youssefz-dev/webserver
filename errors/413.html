@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>413 — Payload Too Large</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c10;--border:rgba(255,255,255,.05);
+  --text:#e8edf2;--muted:rgba(232,237,242,.35);
+  --accent:#f5a623;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
+
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 20%,transparent 100%);
+  pointer-events:none;
+}
+body::after{
+  content:'';position:fixed;
+  width:500px;height:500px;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(245,166,35,.07) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 2rem;border-bottom:1px solid var(--border);
+}
+.bar-left{display:flex;align-items:center;gap:.8rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.bar-code{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);letter-spacing:.14em}
+.bar-right{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em}
+
+main{flex:1;display:flex;align-items:center;padding:2rem 4rem;position:relative;overflow:hidden;gap:4rem}
+
+.ghost{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(18rem,40vw,32rem);
+  line-height:1;color:transparent;
+  -webkit-text-stroke:1px rgba(245,166,35,.07);
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);
+  pointer-events:none;user-select:none;
+}
+
+.content{position:relative;z-index:1;max-width:480px;animation:fadeup .6s ease both}
+@keyframes fadeup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* upload icon with fill bar */
+.icon-wrap{
+  position:relative;z-index:1;
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  width:100px;height:100px;
+  border:1px solid rgba(245,166,35,.15);
+  border-radius:50%;
+  animation:fadeup .6s .1s ease both;
+}
+.icon-wrap::before{
+  content:'';position:absolute;
+  width:130px;height:130px;border-radius:50%;
+  border:1px solid rgba(245,166,35,.06);
+}
+.icon-wrap svg{width:38px;height:38px;stroke:var(--accent);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* shake animation on icon */
+.icon-wrap{animation:fadeup .6s .1s ease both, shake 4s 1s ease-in-out infinite;}
+@keyframes shake{
+  0%,90%,100%{transform:rotate(0deg)}
+  92%{transform:rotate(-4deg)}
+  94%{transform:rotate(4deg)}
+  96%{transform:rotate(-3deg)}
+  98%{transform:rotate(3deg)}
+}
+
+.tag{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:'DM Mono',monospace;font-size:.68rem;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);padding:.3rem .8rem;
+  border:1px solid rgba(245,166,35,.25);border-radius:2px;margin-bottom:1.6rem;
+}
+.tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(3rem,6vw,5rem);
+  line-height:.95;letter-spacing:.04em;margin-bottom:1.2rem;
+}
+h1 em{color:var(--accent);font-style:normal}
+
+.desc{
+  font-family:'DM Mono',monospace;font-size:.8rem;
+  color:var(--muted);line-height:1.8;
+  border-left:2px solid rgba(245,166,35,.2);
+  padding-left:1rem;margin-bottom:1.4rem;
+}
+
+/* size meter */
+.meter-block{
+  margin-bottom:1.8rem;
+  font-family:'DM Mono',monospace;font-size:.7rem;
+  color:var(--muted);
+}
+.meter-labels{display:flex;justify-content:space-between;margin-bottom:.5rem}
+.meter-labels span:last-child{color:var(--accent)}
+.meter-track{
+  height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;
+  position:relative;
+}
+.meter-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,var(--accent),#ff6b35);
+  border-radius:3px;
+  animation:fill-up 1.4s .4s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes fill-up{to{width:136%}}
+.meter-overflow{
+  position:absolute;top:0;right:0;height:100%;width:36%;
+  background:rgba(245,166,35,.4);
+  animation:overflow-fade 1.4s .4s cubic-bezier(.4,0,.2,1) forwards;
+  opacity:0;
+}
+@keyframes overflow-fade{0%{opacity:0}60%{opacity:0}100%{opacity:1}}
+.meter-cap{
+  position:absolute;top:-3px;left:calc(100%/1.36);height:12px;width:2px;
+  background:rgba(255,255,255,.3);border-radius:1px;
+}
+
+.actions{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.75rem 1.8rem;background:var(--accent);color:#080c10;
+  font-family:'DM Mono',monospace;font-size:.76rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;border:none;cursor:pointer;border-radius:2px;
+  transition:opacity .2s,transform .2s;font-weight:700;
+}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.75rem 1.8rem;background:transparent;color:var(--muted);
+  font-family:'DM Mono',monospace;font-size:.76rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;border:1px solid var(--border);cursor:pointer;border-radius:2px;
+  transition:border-color .2s,color .2s;
+}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+
+.bottombar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 2rem;border-top:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.66rem;color:var(--muted);letter-spacing:.1em;
+}
+.status-row{display:flex;align-items:center;gap:1.5rem}
+.status-item{display:flex;align-items:center;gap:.4rem}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.ok{background:#00e5a0}.warn{background:#f5a623}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="bar">
+    <div class="bar-left">
+      <div class="dot"></div>
+      <span class="bar-code">HTTP 413</span>
+    </div>
+    <div class="bar-right" id="ts"></div>
+  </div>
+
+  <main>
+    <div class="ghost">413</div>
+
+    <div class="icon-wrap">
+      <!-- upload with overflow arrow -->
+      <svg viewBox="0 0 24 24">
+        <polyline points="16 16 12 12 8 16"/>
+        <line x1="12" y1="12" x2="12" y2="21"/>
+        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+        <line x1="19" y1="5" x2="23" y2="9"/>
+        <line x1="23" y1="5" x2="19" y2="9"/>
+      </svg>
+    </div>
+
+    <div class="content">
+      <div class="tag">Error 413</div>
+      <h1>Payload<br/><em>Too Large</em></h1>
+      <p class="desc">
+        The request body exceeds the server limit.<br/>
+        Reduce the file size or split the upload into smaller chunks.
+      </p>
+      <div class="meter-block">
+        <div class="meter-labels">
+          <span>Upload size</span>
+          <span>Limit exceeded by 36%</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill"></div>
+          <div class="meter-cap"></div>
+          <div class="meter-overflow"></div>
+        </div>
+        <div class="meter-labels" style="margin-top:.5rem">
+          <span>0 MB</span>
+          <span>Max: 10 MB</span>
+        </div>
+      </div>
+      <div class="actions">
+        <a href="/upload" class="btn-primary">↑ Retry Upload</a>
+        <a href="/" class="btn-ghost">↩ Go Home</a>
+      </div>
+    </div>
+  </main>
+
+  <div class="bottombar">
+    <div class="status-row">
+      <div class="status-item"><div class="status-dot ok"></div>Server Online</div>
+      <div class="status-item"><div class="status-dot warn"></div>Payload Rejected</div>
+    </div>
+    <span id="path"></span>
+  </div>
+
+</div>
+<script>
+  const pad = n => String(n).padStart(2,'0');
+  const tick = () => {
+    const d = new Date();
+    document.getElementById('ts').textContent =
+      `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}  ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+  tick(); setInterval(tick,1000);
+  document.getElementById('path').textContent = window.location.pathname;
+</script>
+</body>
+</html>

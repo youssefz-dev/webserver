@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Delete — Testing Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c10;--border:rgba(255,255,255,.05);
+  --text:#e8edf2;--muted:rgba(232,237,242,.35);
+  --accent:#ff3c3c;--surface:rgba(13,19,24,.9);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;overflow:hidden}
+
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 20%,transparent 100%);
+  pointer-events:none;
+}
+body::after{
+  content:'';position:fixed;width:600px;height:600px;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(255,60,60,.05) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 2rem;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.bar-left{display:flex;align-items:center;gap:.8rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,60,60,.4)}50%{opacity:.7;box-shadow:0 0 0 5px rgba(255,60,60,0)}}
+.bar-label{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);letter-spacing:.14em}
+.bar-right{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em}
+.back{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em;text-decoration:none;transition:color .2s}
+.back:hover{color:var(--text)}
+
+main{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:2rem;position:relative;
+}
+
+.card{
+  width:100%;max-width:500px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top:2px solid var(--accent);
+  border-radius:4px;
+  backdrop-filter:blur(16px);
+  animation:fadeup .5s ease both;
+}
+@keyframes fadeup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.card-header{
+  padding:1.6rem 2rem 1.2rem;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;
+}
+.tag{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-family:'DM Mono',monospace;font-size:.64rem;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.5rem;
+}
+.tag::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.06em;color:var(--text)}
+.method-badge{
+  font-family:'DM Mono',monospace;font-size:.66rem;letter-spacing:.14em;
+  color:var(--accent);border:1px solid rgba(255,60,60,.25);
+  padding:.25rem .6rem;border-radius:2px;margin-top:.2rem;
+}
+
+.card-body{padding:1.8rem 2rem}
+
+.field{margin-bottom:1rem}
+.field-label{
+  display:block;font-family:'DM Mono',monospace;font-size:.64rem;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem;
+}
+.input-wrap{
+  display:flex;align-items:stretch;
+  border:1px solid var(--border);border-radius:2px;overflow:hidden;
+  transition:border-color .2s;
+}
+.input-wrap:focus-within{border-color:rgba(255,60,60,.35)}
+.input-prefix{
+  display:flex;align-items:center;padding:0 .9rem;
+  background:rgba(255,60,60,.04);border-right:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.76rem;color:rgba(255,60,60,.45);
+  letter-spacing:.04em;white-space:nowrap;flex-shrink:0;
+}
+.input-wrap input{
+  flex:1;padding:.75rem 1rem;background:rgba(255,255,255,.02);border:none;
+  color:var(--text);font-family:'DM Mono',monospace;
+  font-size:.8rem;letter-spacing:.04em;outline:none;
+}
+.input-wrap input::placeholder{color:rgba(232,237,242,.2)}
+
+/* confirm toggle */
+.confirm-row{
+  display:flex;align-items:center;gap:.7rem;
+  margin-bottom:1.2rem;cursor:pointer;user-select:none;
+}
+.confirm-row input[type=checkbox]{display:none}
+.checkbox{
+  width:16px;height:16px;border:1px solid var(--border);border-radius:2px;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:border-color .2s,background .2s;
+}
+.confirm-row:hover .checkbox{border-color:rgba(255,60,60,.4)}
+.confirm-row input:checked + .checkbox{
+  background:var(--accent);border-color:var(--accent);
+}
+.confirm-row input:checked + .checkbox::after{content:'✓';font-size:.65rem;color:#fff;font-weight:700}
+.confirm-label{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted);letter-spacing:.06em}
+
+.btn{
+  width:100%;padding:.85rem;
+  background:var(--accent);color:#fff;border:none;
+  font-family:'DM Mono',monospace;font-size:.78rem;
+  letter-spacing:.16em;text-transform:uppercase;
+  cursor:pointer;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;gap:.6rem;
+  transition:opacity .2s,transform .2s;
+}
+.btn:hover{opacity:.88;transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+
+/* response panel */
+.response{
+  margin-top:1.2rem;
+  border:1px solid var(--border);border-radius:2px;
+  overflow:hidden;display:none;
+}
+.response.visible{display:block}
+.response-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.55rem 1rem;
+  background:rgba(255,255,255,.02);
+  border-bottom:1px solid var(--border);
+}
+.response-label{
+  font-family:'DM Mono',monospace;font-size:.64rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+}
+.status-badge{
+  font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.1em;
+  padding:.2rem .55rem;border-radius:2px;
+}
+.status-2xx{background:rgba(0,229,160,.1);color:#00e5a0;border:1px solid rgba(0,229,160,.2)}
+.status-4xx{background:rgba(255,60,60,.1);color:var(--accent);border:1px solid rgba(255,60,60,.2)}
+.status-5xx{background:rgba(255,140,0,.1);color:#ff8c00;border:1px solid rgba(255,140,0,.2)}
+.response-body{
+  padding:1rem;
+  font-family:'DM Mono',monospace;font-size:.72rem;
+  color:var(--muted);line-height:1.7;white-space:pre-wrap;word-break:break-all;
+  max-height:140px;overflow-y:auto;
+}
+
+/* loader */
+.loader{
+  display:none;width:14px;height:14px;border-radius:50%;
+  border:2px solid rgba(255,60,60,.2);border-top-color:var(--accent);
+  animation:spin .6s linear infinite;
+}
+.loading .loader{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.bottombar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 2rem;border-top:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.66rem;color:var(--muted);letter-spacing:.1em;
+  flex-shrink:0;
+}
+.status-row{display:flex;align-items:center;gap:1.5rem}
+.status-item{display:flex;align-items:center;gap:.4rem}
+.sdot{width:6px;height:6px;border-radius:50%}
+.s-ok{background:#00e5a0}.s-err{background:var(--accent)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="bar">
+    <div class="bar-left">
+      <div class="dot"></div>
+      <span class="bar-label">DELETE /</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:2rem">
+      <a href="index.html" class="back">← Dashboard</a>
+      <div class="bar-right" id="ts"></div>
+    </div>
+  </div>
+
+  <main>
+    <div class="card">
+
+      <div class="card-header">
+        <div>
+          <div class="tag">HTTP Request</div>
+          <div class="card-title">Delete Resource</div>
+        </div>
+        <div class="method-badge">DELETE</div>
+      </div>
+
+      <div class="card-body">
+
+        <div class="field">
+          <label class="field-label">Target Path</label>
+          <div class="input-wrap">
+            <span class="input-prefix" id="origin-label">localhost</span>
+            <input id="path" type="text" placeholder="/a" autocomplete="off"
+              onkeydown="if(event.key==='Enter' && !document.getElementById('btn').disabled) sendDelete()"/>
+          </div>
+        </div>
+
+        <label class="confirm-row" for="confirm">
+          <input type="checkbox" id="confirm" onchange="toggleBtn()"/>
+          <div class="checkbox"></div>
+          <span class="confirm-label">I confirm this action is irreversible</span>
+        </label>
+
+        <button class="btn" id="btn" onclick="sendDelete()" disabled>
+          <div class="loader" id="loader"></div>
+          <span id="btn-text">🗑 Send DELETE</span>
+        </button>
+
+        <div class="response" id="response">
+          <div class="response-header">
+            <span class="response-label">Response</span>
+            <span class="status-badge" id="status-badge"></span>
+          </div>
+          <div class="response-body" id="result"></div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <div class="bottombar">
+    <div class="status-row">
+      <div class="status-item" id="srv-status"><div class="sdot s-ok"></div>Server Ready</div>
+    </div>
+    <span id="host"></span>
+  </div>
+
+</div>
+<script>
+  function toggleBtn(){
+    document.getElementById('btn').disabled = !document.getElementById('confirm').checked;
+  }
+
+  async function sendDelete(){
+    const path = document.getElementById('path').value.trim() || '/a';
+    const btn = document.getElementById('btn');
+    const loader = document.getElementById('loader');
+    const btnText = document.getElementById('btn-text');
+    const responseEl = document.getElementById('response');
+    const resultEl = document.getElementById('result');
+    const badge = document.getElementById('status-badge');
+
+    btn.disabled = true;
+    loader.style.display = 'block';
+    btnText.textContent = 'Sending…';
+    responseEl.classList.remove('visible');
+
+    try {
+      const res = await fetch(path, { method: 'DELETE' });
+      const text = await res.text();
+
+      badge.textContent = `${res.status} ${res.statusText}`;
+      badge.className = 'status-badge ' +
+        (res.status < 300 ? 'status-2xx' : res.status < 500 ? 'status-4xx' : 'status-5xx');
+
+      resultEl.textContent = text || '(empty response)';
+      responseEl.classList.add('visible');
+
+      // update bottom status
+      const srvStatus = document.getElementById('srv-status');
+      if(res.status < 300){
+        srvStatus.innerHTML = '<div class="sdot s-ok"></div>Deleted OK';
+      } else {
+        srvStatus.innerHTML = '<div class="sdot s-err"></div>Request Failed';
+      }
+
+    } catch(e) {
+      badge.textContent = 'Network Error';
+      badge.className = 'status-badge status-4xx';
+      resultEl.textContent = String(e);
+      responseEl.classList.add('visible');
+      document.getElementById('srv-status').innerHTML = '<div class="sdot s-err"></div>Network Error';
+    }
+
+    loader.style.display = 'none';
+    btnText.textContent = '🗑 Send DELETE';
+    btn.disabled = false;
+  }
+
+  document.getElementById('origin-label').textContent = window.location.hostname || 'localhost';
+  document.getElementById('host').textContent = window.location.hostname || 'localhost';
+
+  const pad = n => String(n).padStart(2,'0');
+  const tick = () => {
+    const d = new Date();
+    document.getElementById('ts').textContent =
+      `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}  ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+  tick(); setInterval(tick,1000);
+</script>
+</body>
+</html>

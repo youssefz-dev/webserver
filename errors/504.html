@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>504 — Gateway Timeout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c10;--border:rgba(255,255,255,.05);
+  --text:#e8edf2;--muted:rgba(232,237,242,.35);
+  --accent:#ff4757;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
+
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 20%,transparent 100%);
+  pointer-events:none;
+}
+body::after{
+  content:'';position:fixed;
+  width:500px;height:500px;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(255,71,87,.07) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+/* scanline flicker */
+.scanlines{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,.08) 3px,
+    rgba(0,0,0,.08) 4px
+  );
+  animation:flicker 8s linear infinite;
+}
+@keyframes flicker{
+  0%,98%,100%{opacity:1}
+  98.5%{opacity:.7}
+  99%{opacity:1}
+  99.3%{opacity:.5}
+  99.6%{opacity:1}
+}
+
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 2rem;border-bottom:1px solid var(--border);
+}
+.bar-left{display:flex;align-items:center;gap:.8rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:blink 1.2s step-start infinite}
+@keyframes blink{50%{opacity:0}}
+.bar-code{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);letter-spacing:.14em}
+.bar-right{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em}
+
+main{flex:1;display:flex;align-items:center;padding:2rem 4rem;position:relative;overflow:hidden;gap:4rem}
+
+.ghost{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(18rem,40vw,32rem);
+  line-height:1;color:transparent;
+  -webkit-text-stroke:1px rgba(255,71,87,.07);
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);
+  pointer-events:none;user-select:none;
+}
+
+.content{position:relative;z-index:1;max-width:480px;animation:fadeup .6s ease both}
+@keyframes fadeup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* clock icon */
+.icon-wrap{
+  position:relative;z-index:1;
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  width:100px;height:100px;
+  border:1px solid rgba(255,71,87,.15);
+  border-radius:50%;
+  animation:fadeup .6s .1s ease both;
+}
+.icon-wrap::before{
+  content:'';position:absolute;
+  width:130px;height:130px;border-radius:50%;
+  border:1px solid rgba(255,71,87,.06);
+}
+.icon-wrap svg{width:38px;height:38px;stroke:var(--accent);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+.tag{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:'DM Mono',monospace;font-size:.68rem;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);padding:.3rem .8rem;
+  border:1px solid rgba(255,71,87,.25);border-radius:2px;margin-bottom:1.6rem;
+}
+.tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent);animation:blink 1.2s step-start infinite}
+
+h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(3rem,6vw,5rem);
+  line-height:.95;letter-spacing:.04em;margin-bottom:1.2rem;
+}
+h1 em{color:var(--accent);font-style:normal}
+
+.desc{
+  font-family:'DM Mono',monospace;font-size:.8rem;
+  color:var(--muted);line-height:1.8;
+  border-left:2px solid rgba(255,71,87,.2);
+  padding-left:1rem;margin-bottom:1.4rem;
+}
+
+/* timeout trace */
+.trace{
+  font-family:'DM Mono',monospace;font-size:.68rem;
+  background:rgba(255,71,87,.04);border:1px solid rgba(255,71,87,.1);
+  border-radius:2px;padding:.8rem 1rem;margin-bottom:1.8rem;
+  display:flex;flex-direction:column;gap:.5rem;
+}
+.trace-row{display:flex;align-items:center;justify-content:space-between}
+.trace-label{color:var(--muted)}
+.trace-val{color:var(--text);font-size:.7rem}
+.trace-row.err .trace-label{color:rgba(255,71,87,.6)}
+.trace-row.err .trace-val{color:var(--accent)}
+.trace-divider{height:1px;background:rgba(255,71,87,.08);margin:.1rem 0}
+
+/* elapsed counter */
+.elapsed{
+  font-family:'DM Mono',monospace;font-size:2.4rem;font-weight:300;
+  color:var(--accent);letter-spacing:.06em;margin-bottom:.2rem;
+  line-height:1;
+}
+.elapsed-label{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;margin-bottom:1.6rem}
+
+.actions{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.75rem 1.8rem;background:var(--accent);color:#fff;
+  font-family:'DM Mono',monospace;font-size:.76rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;border:none;cursor:pointer;border-radius:2px;
+  transition:opacity .2s,transform .2s;
+}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.75rem 1.8rem;background:transparent;color:var(--muted);
+  font-family:'DM Mono',monospace;font-size:.76rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;border:1px solid var(--border);cursor:pointer;border-radius:2px;
+  transition:border-color .2s,color .2s;
+}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+
+.bottombar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 2rem;border-top:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.66rem;color:var(--muted);letter-spacing:.1em;
+}
+.status-row{display:flex;align-items:center;gap:1.5rem}
+.status-item{display:flex;align-items:center;gap:.4rem}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.ok{background:#00e5a0}.err{background:var(--accent)}
+.status-dot.err{animation:blink 1.2s step-start infinite}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="page">
+
+  <div class="bar">
+    <div class="bar-left">
+      <div class="dot"></div>
+      <span class="bar-code">HTTP 504</span>
+    </div>
+    <div class="bar-right" id="ts"></div>
+  </div>
+
+  <main>
+    <div class="ghost">504</div>
+
+    <div class="icon-wrap">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+        <line x1="2" y1="2" x2="22" y2="22" stroke-opacity=".3"/>
+      </svg>
+    </div>
+
+    <div class="content">
+      <div class="tag">Error 504</div>
+      <h1>Gateway<br/><em>Timeout</em></h1>
+      <p class="desc">
+        The upstream server failed to respond in time.<br/>
+        The gateway gave up waiting for a valid response.
+      </p>
+
+      <div class="elapsed" id="elapsed">00:00</div>
+      <div class="elapsed-label">Time elapsed since request</div>
+
+      <div class="trace">
+        <div class="trace-row"><span class="trace-label">Gateway</span><span class="trace-val">nginx/1.25.3</span></div>
+        <div class="trace-divider"></div>
+        <div class="trace-row"><span class="trace-label">Upstream</span><span class="trace-val">app-server-03</span></div>
+        <div class="trace-divider"></div>
+        <div class="trace-row err"><span class="trace-label">Status</span><span class="trace-val">Timeout after 30s</span></div>
+      </div>
+
+      <div class="actions">
+        <a href="javascript:location.reload()" class="btn-primary">↺ Retry</a>
+        <a href="/" class="btn-ghost">↩ Go Home</a>
+      </div>
+    </div>
+  </main>
+
+  <div class="bottombar">
+    <div class="status-row">
+      <div class="status-item"><div class="status-dot ok"></div>Gateway Online</div>
+      <div class="status-item"><div class="status-dot err"></div>Upstream Unreachable</div>
+    </div>
+    <span id="path"></span>
+  </div>
+
+</div>
+<script>
+  const pad = n => String(n).padStart(2,'0');
+  const tick = () => {
+    const d = new Date();
+    document.getElementById('ts').textContent =
+      `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}  ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+  tick(); setInterval(tick,1000);
+  document.getElementById('path').textContent = window.location.pathname;
+
+  // elapsed timer
+  const start = Date.now();
+  const el = document.getElementById('elapsed');
+  setInterval(()=>{
+    const s = Math.floor((Date.now()-start)/1000);
+    el.textContent = `${pad(Math.floor(s/60))}:${pad(s%60)}`;
+  },1000);
+</script>
+</body>
+</html>

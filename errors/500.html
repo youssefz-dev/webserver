@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>500 — Internal Server Error</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c10;--border:rgba(255,255,255,.05);
+  --text:#e8edf2;--muted:rgba(232,237,242,.35);
+  --accent:#ff8c00;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Syne',sans-serif}
+
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 90% 90% at 50% 50%,black 20%,transparent 100%);
+  pointer-events:none;
+}
+
+/* radial glow accent */
+body::after{
+  content:'';position:fixed;
+  width:600px;height:600px;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(255,140,0,.06) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+  animation:glow 4s ease-in-out infinite;
+}
+@keyframes glow{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.1)}}
+
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+.bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 2rem;border-bottom:1px solid var(--border);
+}
+.bar-left{display:flex;align-items:center;gap:.8rem}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:flicker 1.5s step-end infinite}
+@keyframes flicker{0%,100%{opacity:1}30%{opacity:.2}60%{opacity:.9}80%{opacity:.3}}
+.bar-code{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);letter-spacing:.14em}
+.bar-right{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em}
+
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;position:relative;overflow:hidden}
+
+.ghost{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(18rem,40vw,32rem);
+  line-height:1;color:transparent;
+  -webkit-text-stroke:1px rgba(255,140,0,.07);
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);
+  pointer-events:none;user-select:none;
+}
+
+.content{position:relative;z-index:1;max-width:520px;animation:fadeup .6s ease both}
+@keyframes fadeup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.tag{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:'DM Mono',monospace;font-size:.68rem;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);padding:.3rem .8rem;
+  border:1px solid rgba(255,140,0,.25);border-radius:2px;margin-bottom:1.6rem;
+}
+.tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(3rem,7vw,5.5rem);
+  line-height:.95;letter-spacing:.04em;margin-bottom:1.2rem;
+}
+h1 em{color:var(--accent);font-style:normal}
+
+/* mini stack trace */
+.trace{
+  background:rgba(255,255,255,.02);
+  border:1px solid var(--border);
+  border-left:2px solid rgba(255,140,0,.3);
+  border-radius:0 4px 4px 0;
+  padding:.9rem 1.1rem;
+  margin-bottom:2rem;
+  font-family:'DM Mono',monospace;font-size:.72rem;
+  color:var(--muted);line-height:1.9;
+  overflow:hidden;
+}
+.trace .err-line{color:var(--accent)}
+.trace .ok-line{color:rgba(0,229,160,.5)}
+
+.actions{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.75rem 1.8rem;background:var(--accent);color:#fff;
+  font-family:'DM Mono',monospace;font-size:.76rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;border:none;cursor:pointer;border-radius:2px;
+  transition:opacity .2s,transform .2s;
+}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.75rem 1.8rem;background:transparent;color:var(--muted);
+  font-family:'DM Mono',monospace;font-size:.76rem;
+  letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;border:1px solid var(--border);cursor:pointer;border-radius:2px;
+  transition:border-color .2s,color .2s;
+}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+
+.bottombar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.8rem 2rem;border-top:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:.66rem;color:var(--muted);letter-spacing:.1em;
+}
+.status-row{display:flex;align-items:center;gap:1.5rem}
+.status-item{display:flex;align-items:center;gap:.4rem}
+.status-dot{width:6px;height:6px;border-radius:50%}
+.warn{background:var(--accent)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="bar">
+    <div class="bar-left">
+      <div class="dot"></div>
+      <span class="bar-code">HTTP 500</span>
+    </div>
+    <div class="bar-right" id="ts"></div>
+  </div>
+
+  <main>
+    <div class="ghost">500</div>
+    <div class="content">
+      <div class="tag">Error 500</div>
+      <h1>Internal<br/><em>Server Error</em></h1>
+      <div class="trace">
+        <div class="err-line">✗  Unhandled exception at runtime</div>
+        <div>   at processRequest (server.js:142)</div>
+        <div>   at Layer.handle (router/layer.js:95)</div>
+        <div class="ok-line">→  Incident logged automatically</div>
+        <div class="ok-line">→  Engineers have been notified</div>
+      </div>
+      <div class="actions">
+        <a href="/" class="btn-primary">↩ Go Home</a>
+        <a href="javascript:location.reload()" class="btn-ghost">↺ Retry</a>
+      </div>
+    </div>
+  </main>
+
+  <div class="bottombar">
+    <div class="status-row">
+      <div class="status-item"><div class="status-dot warn"></div>Server Error</div>
+      <div class="status-item"><div class="status-dot warn"></div>Incident Logged</div>
+    </div>
+    <span id="ts2"></span>
+  </div>
+
+</div>
+<script>
+  const pad = n => String(n).padStart(2,'0');
+  const tick = () => {
+    const d = new Date();
+    const s = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}  ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    document.getElementById('ts').textContent = s;
+    document.getElementById('ts2').textContent = s;
+  };
+  tick(); setInterval(tick,1000);
+</script>
+</body>
+</html>
